@@ -7,7 +7,8 @@ import { addItem, adjustStock, updateItem } from "../data/ops";
 import { parseMoney, toMajor } from "../lib/format";
 import type { Item } from "../domain/types";
 import { Amount, Button, Empty, Field, Input, PageTitle, Sheet } from "../components/ui";
-import { PlusIcon } from "../components/icons";
+import { CameraIcon, PlusIcon } from "../components/icons";
+import { BarcodeScanner } from "../components/BarcodeScanner";
 
 interface Draft {
   id: string | null;
@@ -37,6 +38,7 @@ export function Items() {
   const [q, setQ] = useState("");
   const [draft, setDraft] = useState<Draft | null>(null);
   const [original, setOriginal] = useState<Item | null>(null);
+  const [scanOpen, setScanOpen] = useState(false);
 
   const { data: items, loading } = useLiveQuery<Item>(
     () => query(itemsCol(business.id), orderBy("name"), limit(500)),
@@ -223,13 +225,23 @@ export function Items() {
             )}
             <Field
               label="Barcode (optional)"
-              hint="Click here and scan with any USB/Bluetooth scanner — it types the code for you. During a sale, scanning fills the line instantly."
+              hint="Scan with the camera, a USB scanner (it types the code), or type it. During a sale, scanning fills the line instantly."
             >
-              <Input
-                value={draft.barcode}
-                onChange={(e) => setDraft({ ...draft, barcode: e.target.value })}
-                className="receipt"
-              />
+              <div className="flex gap-2">
+                <Input
+                  value={draft.barcode}
+                  onChange={(e) => setDraft({ ...draft, barcode: e.target.value })}
+                  className="receipt"
+                />
+                <Button
+                  type="button"
+                  onClick={() => setScanOpen(true)}
+                  aria-label="Scan barcode with camera"
+                  className="shrink-0"
+                >
+                  <CameraIcon width={18} height={18} />
+                </Button>
+              </div>
             </Field>
             <Button variant="primary" size="lg" full onClick={save}>
               Save
@@ -245,6 +257,12 @@ export function Items() {
           </div>
         )}
       </Sheet>
+
+      <BarcodeScanner
+        open={scanOpen}
+        onClose={() => setScanOpen(false)}
+        onCode={(code) => setDraft((d) => (d ? { ...d, barcode: code } : d))}
+      />
     </div>
   );
 }

@@ -89,8 +89,8 @@ createdBy, createdAt`
   the one-app-many-businesses thesis in one field: the repairer's job card and
   the shop's receipt share lines, payments, balances and reporting.
 - `void`: the record stays (ledgers don't erase), excluded from open-balance
-  queries. Stock is *not* auto-restored yet — a deliberate MVP simplification;
-  restore via item edit. Planned: reversing `stockMovements` on void.
+  queries. Voiding restores tracked stock via reversing `stockMovements`
+  (reason `void`, `refId` = the invoice).
 
 ### payments/{id}
 `invoiceId, invoiceNumber, customerId?, customerName, amount, method

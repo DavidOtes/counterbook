@@ -300,11 +300,28 @@ export function setJobStage(bizId: string, invoiceId: string, stage: JobStage): 
   ).catch(logSync("update job stage"));
 }
 
-/** Cancels an invoice. Does not auto-restore stock (see docs/SCHEMA.md). */
-export function voidInvoice(bizId: string, invoiceId: string): void {
-  updateDoc(doc(invoicesCol(bizId), invoiceId), {
-    status: "void",
-  } as UpdateData<Invoice>).catch(logSync("void invoice"));
+/** Cancels an invoice and puts tracked stock back, with reversing movements. */
+export function voidInvoice(bizId: string, inv: Invoice, itemsById: Map<string, Item>): void {
+  const batch = writeBatch(db);
+  const now = Timestamp.now();
+  batch.update(doc(invoicesCol(bizId), inv.id), { status: "void" } as UpdateData<Invoice>);
+  for (const line of inv.lines) {
+    if (!line.itemId) continue;
+    const item = itemsById.get(line.itemId);
+    if (!item || !item.trackStock) continue;
+    batch.update(doc(itemsCol(bizId), item.id), { stockQty: increment(line.qty) });
+    const mref = doc(movementsCol(bizId));
+    batch.set(mref, {
+      id: mref.id,
+      itemId: item.id,
+      itemName: item.name,
+      delta: line.qty,
+      reason: "void",
+      refId: inv.id,
+      at: now,
+    });
+  }
+  batch.commit().catch(logSync("void receipt"));
 }
 
 // ---------------------------------------------------------------- expenses

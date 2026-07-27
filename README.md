@@ -85,12 +85,29 @@ purpose — this is used in daylight shops on budget phones. Fonts are bundled
 locally (Bricolage Grotesque / Hanken Grotesk / Spline Sans Mono) so the PWA
 renders offline. Details in `.impeccable.md`.
 
+## AI receipt reading (Phase 2, shipped)
+
+The Add-Expense sheet has a "✨ Read it for me" button: the receipt photo is
+downscaled in the browser and sent to `api/extract-receipt.ts` — a Vercel
+serverless function that calls **Claude vision** and returns vendor, amount,
+date, and category for the user to confirm. The Anthropic API key lives only
+in that function, never in the browser.
+
+To switch it on: Vercel → Project → Settings → Environment Variables →
+`ANTHROPIC_API_KEY` (from console.anthropic.com) → redeploy. Until then the
+button politely says it isn't set up; nothing is charged.
+
+**Cost control:** the model defaults to `claude-opus-5`; set the
+`EXTRACT_MODEL` env var (e.g. `claude-haiku-4-5`, ~12× cheaper) to change it
+without a code change. You pay Anthropic per call — roughly $0.03/receipt on
+Opus 5, well under a cent on Haiku 4.5.
+
 ## Roadmap
 
-- **Phase 2 — the camera becomes the keyboard:** receipt photo → expense
-  fields via a vision model; camera barcode scanning (BarcodeDetector) for
-  retail; device-label photo → job asset details; WhatsApp debtor reminders
-  you already have, made scheduled.
+- **Phase 2 — the camera becomes the keyboard:** ✅ receipt photo → expense
+  fields (Claude vision); ✅ camera barcode scanning (BarcodeDetector,
+  Chrome/Android); still to come: device-label photo → job asset details,
+  scheduled WhatsApp debtor reminders.
 - **Phase 3 — accounting surface:** monthly P&L view, payments-by-method
   report, CSV/PDF export for the accountant, staff accounts with roles,
   paper-ledger import (photograph the old book, AI transcribes it).
@@ -98,7 +115,6 @@ renders offline. Details in `.impeccable.md`.
 ## Known gaps (deliberate for v1)
 
 - PWA icons are SVG-only; iOS home-screen wants PNG `apple-touch-icon` sizes.
-- Voiding a receipt doesn't auto-restore stock (documented in SCHEMA.md).
 - Not a git repo yet — run `git init` when ready.
 - **The name "Counterbook" is provisional.** A prior Nigerian app of the same
   name looks defunct (empty site, no store listings), but do a Nigerian

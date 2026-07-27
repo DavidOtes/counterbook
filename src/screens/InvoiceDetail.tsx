@@ -1,14 +1,14 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
-import { doc, query, where } from "firebase/firestore";
+import { doc, limit, query, where } from "firebase/firestore";
 import { useBusiness } from "../context/BusinessContext";
-import { invoicesCol, paymentsCol } from "../data/db";
+import { invoicesCol, itemsCol, paymentsCol } from "../data/db";
 import { useLiveDoc, useLiveQuery } from "../data/hooks";
 import { recordPayment, setJobStage, voidInvoice } from "../data/ops";
 import { textReceipt } from "../domain/invoice";
 import { JOB_STAGES, PAYMENT_METHODS } from "../domain/presets";
 import { fmtDateTime, parseMoney, toMajor, waLink } from "../lib/format";
-import type { Invoice, Payment, PaymentMethod } from "../domain/types";
+import type { Invoice, Item, Payment, PaymentMethod } from "../domain/types";
 import { Amount, Button, Field, Input, Sheet, StatusChip } from "../components/ui";
 import { BackIcon, CheckIcon, PrinterIcon, ShareIcon } from "../components/icons";
 import { Splash } from "../components/Splash";
@@ -30,6 +30,11 @@ export function InvoiceDetail() {
     () => [...payments].sort((a, b) => a.at.toMillis() - b.at.toMillis()),
     [payments],
   );
+  const { data: items } = useLiveQuery<Item>(
+    () => query(itemsCol(business.id), limit(500)),
+    [business.id],
+  );
+  const itemsById = useMemo(() => new Map(items.map((i) => [i.id, i])), [items]);
 
   const [payOpen, setPayOpen] = useState(false);
   const [payStr, setPayStr] = useState("");
@@ -66,10 +71,10 @@ export function InvoiceDetail() {
   function doVoid() {
     if (
       window.confirm(
-        "Void this receipt? It stays in your book marked as void. Stock is not restored automatically.",
+        "Void this receipt? It stays in your book marked as void, and stock from this sale goes back into your counts.",
       )
     ) {
-      voidInvoice(business.id, inv!.id);
+      voidInvoice(business.id, inv!, itemsById);
     }
   }
 

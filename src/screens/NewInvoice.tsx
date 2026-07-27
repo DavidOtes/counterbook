@@ -11,7 +11,8 @@ import { PAYMENT_METHODS } from "../domain/presets";
 import { fmtMoney, parseMoney, toMajor } from "../lib/format";
 import type { Customer, InvoiceLine, Item, PaymentMethod } from "../domain/types";
 import { Button, Field, Input } from "../components/ui";
-import { BackIcon, PlusIcon, XIcon } from "../components/icons";
+import { BackIcon, CameraIcon, PlusIcon, XIcon } from "../components/icons";
+import { BarcodeScanner } from "../components/BarcodeScanner";
 
 interface LineDraft {
   key: number;
@@ -59,6 +60,8 @@ export function NewInvoice() {
   const [method, setMethod] = useState<PaymentMethod>("cash");
   const [partStr, setPartStr] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [scanOpen, setScanOpen] = useState(false);
+  const [scanMsg, setScanMsg] = useState<string | null>(null);
 
   const matchedCustomer = useMemo(
     () =>
@@ -88,6 +91,26 @@ export function NewInvoice() {
     } else {
       patchLine(l.key, { itemId: null, description: text });
     }
+  }
+
+  /** Camera scan: match a saved item by barcode and drop it into the sale. */
+  function handleScan(code: string) {
+    const hit = items.find((i) => i.barcode && i.barcode.toLowerCase() === code.toLowerCase());
+    if (!hit) {
+      setScanMsg(`No saved item with code ${code} — add it under Items first, then scan again.`);
+      return;
+    }
+    setScanMsg(null);
+    const patch = {
+      itemId: hit.id,
+      description: hit.name,
+      priceStr: hit.price > 0 ? toMajor(hit.price, currency) : "",
+    };
+    setLines((ls) => {
+      const idx = ls.findIndex((l) => !l.description.trim());
+      if (idx >= 0) return ls.map((l, i) => (i === idx ? { ...l, ...patch } : l));
+      return [...ls, { ...blankLine(), ...patch }];
+    });
   }
 
   const parsedLines: InvoiceLine[] = lines
@@ -272,9 +295,14 @@ export function NewInvoice() {
         </datalist>
 
         <div className="mt-3 flex items-center justify-between">
-          <Button size="sm" onClick={() => setLines((ls) => [...ls, blankLine()])}>
-            <PlusIcon width={16} height={16} /> Add line
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" onClick={() => setLines((ls) => [...ls, blankLine()])}>
+              <PlusIcon width={16} height={16} /> Add line
+            </Button>
+            <Button size="sm" onClick={() => setScanOpen(true)}>
+              <CameraIcon width={16} height={16} /> Scan
+            </Button>
+          </div>
           {!showDiscount ? (
             <button
               className="text-[14px] font-semibold text-brand-deep"
@@ -295,6 +323,7 @@ export function NewInvoice() {
             </div>
           )}
         </div>
+        {scanMsg && <p className="mt-2 text-[13px] text-amber">{scanMsg}</p>}
       </div>
 
       {/* Payment */}
@@ -374,6 +403,8 @@ export function NewInvoice() {
           </Button>
         </div>
       </div>
+
+      <BarcodeScanner open={scanOpen} onClose={() => setScanOpen(false)} onCode={handleScan} />
     </div>
   );
 }

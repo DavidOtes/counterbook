@@ -10,6 +10,7 @@
     "emulators": "firebase emulators:start --project demo-invoice"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.115.0",
     "@fontsource-variable/bricolage-grotesque": "^5.2.0",
     "@fontsource-variable/hanken-grotesk": "^5.2.0",
     "@fontsource-variable/spline-sans-mono": "^5.2.0",

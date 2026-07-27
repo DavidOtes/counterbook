@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" fill="#1e5b45"/>
+  <!-- ledger page, inset for maskable safe zone -->
+  <rect x="38" y="34" width="52" height="60" rx="5" fill="#f7f4ee"/>
+  <line x1="46" y1="49" x2="82" y2="49" stroke="#c9d2c5" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="46" y1="60" x2="82" y2="60" stroke="#c9d2c5" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="46" y1="71" x2="71" y2="71" stroke="#c9d2c5" stroke-width="2.5" stroke-linecap="round"/>
+  <path d="M50 81 l7 7 l19 -19" fill="none" stroke="#1e5b45" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

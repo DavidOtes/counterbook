@@ -1,0 +1,16 @@
+rules_version = '2';
+
+// Receipt photos are stored under the uploader's uid for now:
+//   receipts/{uid}/{businessId}/{filename}
+// Simple and safe. Limitation: other members of the same business can't
+// read files you uploaded — acceptable for MVP, revisit with cross-service
+// rules (firestore.get) when team accounts matter.
+service firebase.storage {
+  match /b/{bucket}/o {
+    match /receipts/{uid}/{allPaths=**} {
+      allow read, write: if request.auth != null
+        && request.auth.uid == uid
+        && request.resource.size < 10 * 1024 * 1024;
+    }
+  }
+}

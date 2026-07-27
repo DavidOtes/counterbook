@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="28" fill="#1e5b45"/>
+  <!-- ledger page -->
+  <rect x="30" y="24" width="68" height="80" rx="6" fill="#f7f4ee"/>
+  <!-- ruled lines -->
+  <line x1="40" y1="44" x2="88" y2="44" stroke="#c9d2c5" stroke-width="3" stroke-linecap="round"/>
+  <line x1="40" y1="58" x2="88" y2="58" stroke="#c9d2c5" stroke-width="3" stroke-linecap="round"/>
+  <line x1="40" y1="72" x2="74" y2="72" stroke="#c9d2c5" stroke-width="3" stroke-linecap="round"/>
+  <!-- tally check -->
+  <path d="M44 86 l10 10 l26 -26" fill="none" stroke="#1e5b45" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>
+</svg>

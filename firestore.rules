@@ -1,0 +1,45 @@
+rules_version = '2';
+
+// Every business document carries `memberUids` (array of auth uids).
+// All business data lives in subcollections under the business document,
+// so one membership check governs everything.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    match /businesses/{bizId} {
+
+      function isMember() {
+        return signedIn() && request.auth.uid in resource.data.memberUids;
+      }
+
+      allow get, list: if isMember();
+
+      // A user may create a business only with themselves as sole owner.
+      allow create: if signedIn()
+        && request.resource.data.memberUids == [request.auth.uid]
+        && request.resource.data.members[request.auth.uid] == 'owner';
+
+      // Members may edit business settings, but never the membership fields.
+      // (Member management arrives later via owner-only rules or a function.)
+      allow update: if isMember()
+        && request.resource.data.memberUids == resource.data.memberUids
+        && request.resource.data.members == resource.data.members;
+
+      allow delete: if false;
+
+      // customers, items, invoices, payments, expenses, stockMovements, meta
+      match /{col}/{docId} {
+        function memberOfParent() {
+          return signedIn()
+            && request.auth.uid in
+               get(/databases/$(database)/documents/businesses/$(bizId)).data.memberUids;
+        }
+        allow read, write: if memberOfParent();
+      }
+    }
+  }
+}

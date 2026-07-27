@@ -1,0 +1,135 @@
+@import "@fontsource-variable/hanken-grotesk";
+@import "@fontsource-variable/bricolage-grotesque";
+@import "@fontsource-variable/spline-sans-mono";
+@import "tailwindcss";
+
+/*
+ * Design language: "a well-kept ledger".
+ * Warm paper surfaces, deep market-green brand, ruled lines like an
+ * account book, money always in the receipt face with tabular figures.
+ * Light theme by design: used in shops and market stalls in daylight.
+ */
+@theme {
+  --font-sans: "Hanken Grotesk Variable", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Bricolage Grotesque Variable", "Hanken Grotesk Variable", ui-sans-serif, sans-serif;
+  --font-receipt: "Spline Sans Mono Variable", ui-monospace, "SF Mono", monospace;
+
+  --color-ink: oklch(26% 0.02 155);
+  --color-ink-soft: oklch(44% 0.018 150);
+  --color-ink-faint: oklch(57% 0.014 145);
+  --color-paper: oklch(96.8% 0.009 95);
+  --color-card: oklch(99.2% 0.004 95);
+  --color-line: oklch(88.5% 0.013 120);
+  --color-brand: oklch(44% 0.09 158);
+  --color-brand-deep: oklch(35% 0.078 158);
+  --color-brand-tint: oklch(93.5% 0.028 158);
+  --color-amber: oklch(54% 0.115 70);
+  --color-amber-tint: oklch(94% 0.045 85);
+  --color-clay: oklch(48% 0.14 30);
+  --color-clay-tint: oklch(94.5% 0.03 30);
+
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+}
+
+@layer base {
+  html {
+    background: var(--color-paper);
+  }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-size: 16px;
+  }
+  ::selection {
+    background: var(--color-brand-tint);
+  }
+  :focus-visible {
+    outline: 2px solid var(--color-brand);
+    outline-offset: 2px;
+  }
+  button {
+    cursor: pointer;
+  }
+}
+
+@layer components {
+  /* Amounts always wear the receipt face with tabular figures. */
+  .money {
+    font-family: var(--font-receipt);
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.01em;
+  }
+
+  /* A ledger row: hairline-ruled, generous touch target. */
+  .ledger-row {
+    @apply flex items-center gap-3 border-b border-line py-3 min-h-14 text-left w-full;
+  }
+
+  .small-caps-label {
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-ink-faint;
+  }
+
+  /* Rotated stamp for settled receipts. */
+  .stamp {
+    @apply absolute font-display font-bold uppercase tracking-[0.2em] text-brand border-[3px] border-brand rounded-md px-3 py-1;
+    transform: rotate(-8deg);
+    opacity: 0.55;
+  }
+
+  .receipt {
+    font-family: var(--font-receipt);
+    font-variant-numeric: tabular-nums;
+  }
+  .receipt-rule {
+    border-top: 2px dashed var(--color-line);
+  }
+}
+
+@keyframes rise {
+  from {
+    transform: translateY(14px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+@keyframes fade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+@layer components {
+  .anim-rise {
+    animation: rise 0.26s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+  .anim-fade {
+    animation: fade 0.2s ease-out both;
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .anim-rise,
+    .anim-fade {
+      animation: none;
+    }
+  }
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: white;
+  }
+  .print-area {
+    box-shadow: none !important;
+    border: none !important;
+    max-width: 80mm;
+    margin: 0;
+  }
+}
